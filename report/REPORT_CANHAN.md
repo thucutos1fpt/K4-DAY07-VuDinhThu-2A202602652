@@ -1,128 +1,128 @@
 # Báo Cáo Cá Nhân — Lab 7: Embedding & Vector Store
 
-**Họ tên:** [Tên sinh viên]
-**Nhóm:** [Tên nhóm]
-**Ngày:** [Ngày nộp]
+**Họ tên:** Vũ Đình Thư
+**Mã học viên:** 2A202602652
+**Nhóm:** Thiên An
+**Ngày:** 20/09/2026
 
-> **Nộp 1 bản / sinh viên.** Phần nhóm (lựa chọn tài liệu, thiết kế chiến lược, bộ câu hỏi đánh giá, demo) nộp chung 1 bản trong `REPORT_NHOM.md`. Chi tiết thang điểm: `docs/SCORING.md`.
+## 1. Khởi động (Warm-up) — Cá nhân
 
-**Tổng điểm phần cá nhân: 60** = Khởi động (5) + Hướng tiếp cận (10) + Hoàn thiện code (30) + Dự đoán độ tương tự (5) + Kết quả truy xuất của tôi (10).
+### Độ tương tự Cosine (Cosine Similarity)
 
----
+**Độ tương tự cosine cao nghĩa là gì?**
 
-## 1. Khởi động (Warm-up) — Cá nhân (5 điểm)
-
-### Độ tương tự Cosine (Cosine Similarity) (Bài tập 1.1)
-
-**Độ tương tự cosine cao (High cosine similarity) nghĩa là gì?**
-> *Viết 1-2 câu:*
+Độ tương tự cosine cao nghĩa là hai vector có hướng gần giống nhau. Với text embedding, điều này thường cho thấy hai câu có nội dung hoặc ý nghĩa liên quan.
 
 **Ví dụ có độ tương tự CAO:**
-- Câu A:
-- Câu B:
-- Tại sao tương đồng:
+
+* Câu A: Sinh viên đăng ký học phần trên cổng thông tin.
+* Câu B: Người học dùng hệ thống trực tuyến để đăng ký môn học.
+* Tại sao tương đồng: Cả hai đều nói về hành động đăng ký môn học bằng hệ thống trực tuyến.
 
 **Ví dụ có độ tương tự THẤP:**
-- Câu A:
-- Câu B:
-- Tại sao khác:
 
-**Tại sao độ tương tự cosine (cosine similarity) được ưu tiên hơn khoảng cách Euclid (Euclidean distance) cho text embeddings?**
-> *Viết 1-2 câu:*
+* Câu A: Chính sách giao hàng áp dụng cho đơn nội thành.
+* Câu B: Món ăn này có vị cay và đậm đà.
+* Tại sao khác: Hai câu thuộc hai chủ đề khác nhau: vận chuyển hàng hóa và mô tả đồ ăn.
 
-### Bài toán tính toán Chunking (Bài tập 1.2)
+**Tại sao cosine similarity được ưu tiên hơn Euclidean distance cho text embeddings?**
 
-**Tài liệu 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
-> *Trình bày phép tính:*
-> *Đáp án:*
+Cosine similarity đo hướng của vector nên tập trung vào mức độ giống nhau về ý nghĩa, ít bị ảnh hưởng bởi độ dài vector. Trong text embedding, hai câu có độ dài khác nhau vẫn có thể cùng ý nghĩa, nên cosine similarity thường phù hợp hơn khoảng cách Euclid.
 
-**Nếu độ chồng chéo (overlap) tăng lên 100, số lượng chunk thay đổi thế nào? Tại sao muốn độ chồng chéo nhiều hơn?**
-> *Viết 1-2 câu:*
+### Bài toán tính toán Chunking
 
----
+**Tài liệu 10.000 ký tự, `chunk_size = 500`, `overlap = 50`. Bao nhiêu chunks?**
 
-## 2. Hướng tiếp cận của tôi (My Approach) — Cá nhân (10 điểm)
+* Bước dịch giữa hai chunk: `500 - 50 = 450` ký tự.
+* Công thức: `ceil((10000 - 500) / 450) + 1`
+* `= ceil(9500 / 450) + 1`
+* `= 22 + 1 = 23 chunks`.
 
-Giải thích cách tiếp cận của bạn khi lập trình (implement) các phần chính trong gói `src`.
+**Đáp án:** 23 chunks.
 
-### Các hàm chia nhỏ (Chunking Functions)
+**Nếu overlap tăng lên 100 thì sao?**
 
-**`SentenceChunker.chunk`** — hướng tiếp cận:
-> *Viết 2-3 câu: dùng biểu thức chính quy (regex) gì để phát hiện câu? Xử lý trường hợp ngoại lệ (edge case) nào?*
+Khi overlap là 100, bước dịch chỉ còn `500 - 100 = 400` ký tự nên số chunk tăng lên 25. Overlap lớn giúp thông tin ở ranh giới giữa hai chunk không bị mất ngữ cảnh, nhưng làm tăng số lượng dữ liệu cần lưu và tìm kiếm.
 
-**`RecursiveChunker.chunk` / `_split`** — hướng tiếp cận:
-> *Viết 2-3 câu: thuật toán hoạt động thế nào? Base case (trường hợp cơ sở) là gì?*
+## 2. Hướng tiếp cận của tôi
 
-### Lớp EmbeddingStore
+### Các hàm chia nhỏ
 
-**`add_documents` + `search`** — hướng tiếp cận:
-> *Viết 2-3 câu: lưu trữ thế nào? Tính độ tương tự ra sao?*
+**`SentenceChunker.chunk` — hướng tiếp cận**
 
-**`search_with_filter` + `delete_document`** — hướng tiếp cận:
-> *Viết 2-3 câu: lọc (filter) trước hay sau? Xóa bằng cách nào?*
+Tôi dùng regex `(?<=[.!?])(?:\s+|$)` để nhận diện vị trí kết thúc câu sau dấu chấm, chấm hỏi hoặc chấm than. Sau đó, tôi loại bỏ khoảng trắng thừa và gom số câu theo `max_sentences_per_chunk`. Với chuỗi rỗng hoặc chỉ có khoảng trắng, hàm trả về danh sách rỗng.
 
-### Tác tử KnowledgeBaseAgent
+**`RecursiveChunker.chunk` / `_split` — hướng tiếp cận**
 
-**`answer`** — hướng tiếp cận:
-> *Viết 2-3 câu: cấu trúc prompt? Cách đưa ngữ cảnh (inject context) vào thế nào?*
+Thuật toán ưu tiên chia văn bản theo thứ tự: đoạn trống, xuống dòng, dấu chấm, khoảng trắng và cuối cùng là từng ký tự. Nếu đoạn văn bản đã nhỏ hơn hoặc bằng `chunk_size` thì đây là base case và đoạn đó được giữ lại. Nếu không tìm thấy separator phù hợp, chương trình dùng separator tiếp theo; khi hết separator sẽ cắt theo kích thước cố định để tránh lỗi với từ quá dài.
 
----
+### Lớp `EmbeddingStore`
 
-## 3. Hoàn thiện code (Core Implementation) — Cá nhân (30 điểm)
+**`add_documents` + `search` — hướng tiếp cận**
 
-Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
+Khi thêm tài liệu, tôi tạo embedding từ `content`, lưu nội dung, metadata, ID và vector embedding thành một record. Khi tìm kiếm, hệ thống tạo embedding cho câu hỏi, tính dot product với embedding của các record và sắp xếp kết quả theo score giảm dần để lấy top-k tài liệu liên quan nhất.
 
-### Kết Quả Kiểm Thử (Test Results)
+**`search_with_filter` + `delete_document` — hướng tiếp cận**
 
+Với `search_with_filter`, tôi lọc record theo metadata trước rồi mới tìm kiếm tương đồng trên tập tài liệu đã lọc. Cách này giúp tránh trả về thông tin không đúng đối tượng, ví dụ thông tin giảng viên khi câu hỏi thuộc về sinh viên. Với `delete_document`, tôi xóa các record có `metadata["doc_id"]` trùng với ID tài liệu cần xóa và trả về `True` nếu có dữ liệu bị xóa.
+
+### Tác tử `KnowledgeBaseAgent`
+
+**`answer` — hướng tiếp cận**
+
+Agent lấy top-k chunk liên quan nhất từ `EmbeddingStore`, sau đó ghép các chunk thành phần `Context` có đánh số nguồn. Prompt yêu cầu mô hình chỉ trả lời dựa trên context đã cung cấp và nói rõ nếu context không có câu trả lời. Cuối cùng, prompt chứa context và question được gửi vào `llm_fn` để sinh câu trả lời.
+
+## 3. Hoàn thiện code
+
+### Kết quả kiểm thử
+
+```text
+====================== 42 passed in 0.20s ======================
 ```
-# Dán kết quả (output) của: pytest tests/ -v
-```
 
-**Số lượng bài test vượt qua (pass):** __ / 42
+**Số lượng bài test vượt qua:** **42 / 42**
 
----
+Tôi đã hoàn thiện các phần `SentenceChunker`, `RecursiveChunker`, `compute_similarity`, `ChunkingStrategyComparator`, `EmbeddingStore` và `KnowledgeBaseAgent`. Các test về chunking, vector store, filter metadata, xóa tài liệu, cosine similarity và RAG agent đều đã pass.
 
-## 4. Dự đoán độ tương tự (Similarity Predictions) — Cá nhân (5 điểm)
+## 4. Dự đoán độ tương tự
 
-| Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
-|------|-----------|-----------|---------|--------------|-------|
-| 1 | | | cao / thấp | | |
-| 2 | | | cao / thấp | | |
-| 3 | | | cao / thấp | | |
-| 4 | | | cao / thấp | | |
-| 5 | | | cao / thấp | | |
+| Cặp | Câu A                                           | Câu B                                                  | Dự đoán         | Điểm thực tế | Đúng? |
+| --- | ----------------------------------------------- | ------------------------------------------------------ | --------------- | -----------: | ----- |
+| 1   | Quy định hoàn tiền trong 7 ngày.                | Khách hàng được nhận lại tiền sau tối đa 7 ngày.       | Cao             |       0.0264 | Không |
+| 2   | Sinh viên đăng ký học phần trên cổng thông tin. | Người học dùng hệ thống trực tuyến để đăng ký môn học. | Cao             |       0.0157 | Không |
+| 3   | Thư viện mở cửa từ thứ Hai đến thứ Sáu.         | Giờ hoạt động của thư viện là các ngày trong tuần.     | Cao             |       0.0171 | Không |
+| 4   | Chính sách giao hàng áp dụng cho đơn nội thành. | Món ăn này có vị cay và đậm đà.                        | Thấp            |       0.0873 | Không |
+| 5   | Giảng viên được mượn sách trong 180 ngày.       | Sinh viên được mượn sách trong 10 ngày.                | Trung bình/thấp |       0.0599 | Có    |
 
-**Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> *Viết 2-3 câu:*
+**Kết quả bất ngờ nhất**
 
----
+Các câu có cùng ý nghĩa vẫn cho điểm thấp, trong khi một cặp khác chủ đề lại có điểm cao hơn. Nguyên nhân là bài lab hiện dùng `_mock_embed`, đây là embedding giả lập sinh vector theo hàm hash để test ổn định, không phải mô hình embedding ngữ nghĩa thật. Vì vậy, kết quả này cho thấy chất lượng retrieval phụ thuộc rất nhiều vào embedding backend; khi dùng Local, OpenAI hoặc Gemini embedder thật, các câu cùng nghĩa được kỳ vọng sẽ có score cao hơn.
 
-## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
+## 5. Kết quả truy xuất của tôi
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. **5 câu hỏi này phải trùng với các thành viên cùng nhóm** (xem `REPORT_NHOM.md`).
+> Phần này sẽ được hoàn thiện sau khi nhóm thống nhất bộ tài liệu chung và 5 benchmark query. Tôi sẽ chạy cùng 5 câu hỏi đó trên chiến lược cá nhân của mình để kết quả có thể so sánh công bằng với các thành viên khác.
 
-| # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
-|---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? | Câu trả lời của Agent (tóm tắt) |
+| - | --------------- | ------------------------------------ | ---------: | ------------------- | ------------------------------- |
+| 1 | [Query nhóm 1]  | [Điền sau khi chạy]                  |    [Score] | [Có/Không]          | [Tóm tắt]                       |
+| 2 | [Query nhóm 2]  | [Điền sau khi chạy]                  |    [Score] | [Có/Không]          | [Tóm tắt]                       |
+| 3 | [Query nhóm 3]  | [Điền sau khi chạy]                  |    [Score] | [Có/Không]          | [Tóm tắt]                       |
+| 4 | [Query nhóm 4]  | [Điền sau khi chạy]                  |    [Score] | [Có/Không]          | [Tóm tắt]                       |
+| 5 | [Query nhóm 5]  | [Điền sau khi chạy]                  |    [Score] | [Có/Không]          | [Tóm tắt]                       |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** __ / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** [Điền sau khi chạy] / 5
 
-**Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+**Điều hay nhất tôi học được từ thành viên khác / nhóm khác**
 
----
+Tôi muốn quan sát cách các thành viên lựa chọn kích thước chunk, overlap và metadata filter. Tôi kỳ vọng chiến lược chunk theo heading hoặc mục quy định sẽ giữ ngữ cảnh tốt hơn với tài liệu có cấu trúc, trong khi `FixedSizeChunker` có thể đơn giản hơn nhưng dễ cắt giữa một ý quan trọng.
 
-## Tự Đánh Giá (Phần Cá Nhân)
+## Tự đánh giá
 
-| Tiêu chí | Điểm tự đánh giá |
-|----------|-------------------|
-| Khởi động (Warm-up) | / 5 |
-| Hướng tiếp cận của tôi (My Approach) | / 10 |
-| Hoàn thiện code (Core Implementation — tests) | / 30 |
-| Dự đoán độ tương tự (Similarity Predictions) | / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | / 10 |
-| **Tổng phần cá nhân** | **/ 60** |
+| Tiêu chí                      |         Điểm tự đánh giá |
+| ----------------------------- | -----------------------: |
+| Khởi động (Warm-up)           |                    5 / 5 |
+| Hướng tiếp cận của tôi        |                  10 / 10 |
+| Hoàn thiện code (42/42 tests) |                  30 / 30 |
+| Dự đoán độ tương tự           |                    5 / 5 |
+| Kết quả truy xuất của tôi     |          [Điền sau] / 10 |
+| **Tổng phần cá nhân**         | **50 / 60 + phần mục 5** |
