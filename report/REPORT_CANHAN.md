@@ -124,5 +124,5 @@ Tôi muốn quan sát cách các thành viên lựa chọn kích thước chunk,
 | Hướng tiếp cận của tôi        |                  10 / 10 |
 | Hoàn thiện code (42/42 tests) |                  30 / 30 |
 | Dự đoán độ tương tự           |                    5 / 5 |
-| Kết quả truy xuất của tôi     |          [Điền sau] / 10 |
-| **Tổng phần cá nhân**         | **50 / 60 + phần mục 5** |
+| Kết quả truy xuất của tôi     |          8 / 10 |
+| Tổng phần cá nhân       | 58 / 60 + phần mục 5 |
